@@ -1,5 +1,6 @@
+const env = require("dotenv/config")
 const { Client, Intents } = require('discord.js');
-const ayarlar = require("./config.js")
+const ayarlar = require("./keywords.js")
 const fetch = require("node-fetch")
 const chalk = require("chalk")
 const db = require("croxydb")
@@ -12,12 +13,12 @@ client.on('ready', async () => {
 let eklen = 0
 
 client.on("messageCreate", async(message) => {
-  if(!message.channel.id == "1033007393765863436") return;
-  const sehirler = ayarlar.sehirler
+  if(!message.channel.id == env.CHANNEL_ID) return;
+  const keywords = ayarlar.keywords
   const requiredWords = 2;
   let wordCount = 0;
 
-  sehirler.forEach(word => {
+  keywords.forEach(word => {
     if (message.content.includes(word.toLocaleLowerCase())) {
       wordCount = wordCount + 1
     }
@@ -44,7 +45,7 @@ const data = await response.json();
 
 })
 
-client.login('MTA3Mjk3Mjc0MjI3OTgzOTc4NA.GOuA34.QpVdo9eej9tGCyfNeirUZOsnL9HuwbkrINrogc');
+client.login(env.BOT_TOKEN);
 
 function msToTime(duration) {
   var milliseconds = Math.floor((duration % 1000) / 100),
