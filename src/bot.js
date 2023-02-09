@@ -1,84 +1,50 @@
 const env = require("dotenv/config")
 const { Client, Intents } = require('discord.js');
 const ayarlar = require("./keywords.js")
-const fetch = require("node-fetch")
-const chalk = require("chalk")
-const db = require("croxydb")
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] }); 
+const fs = require("fs")
+
+let msg_archive;
+
+
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });  //client intents setting
 
 client.on('ready', async () => {
-  console.log(`${client.user.username} is ready!`);
+  console.log(`${client.user.username} is ready!`); //bot ready message
 })
 
-let eklen = 0
 
 client.on("messageCreate", async(message) => {
-  if(!message.channel.id == env.CHANNEL_ID) return;
-  const keywords = ayarlar.keywords
-  const requiredWords = 2;
-  let wordCount = 0;
+  if(!message.channel.id == env.CHANNEL_ID) return; //If channel id is not selected channel
+  const keywords = ayarlar.keywords; //getting keywords
+  const msg_content = message.content.split(" "); //spliting message. because of that, we can get every word to match our keywords
 
-  keywords.forEach(word => {
-    if (message.content.includes(word.toLocaleLowerCase())) {
-      wordCount = wordCount + 1
-    }
-  });
-  console.log(wordCount)
-  if (wordCount >= requiredWords) {
+  const result = msg_content.filter(word => keywords.includes(word)); //filtering message
+
+
+  if (result.length >= 1 && msg_archive !== message.content) { // If message content words has one or more in our keywords and message is not same (doing this for spam)
     console.log(message.content)
-    let adress = db.fetch("adresler")
-    if(adress.includes(message.content)) return;
-    db.push("adresler", message.content)
-    eklen = eklen + 1
-    const body = {"adres": message.content}
-
-    /*  const response = await fetch('/post', {
-method: 'post',
-body: JSON.stringify(body),
-headers: {'Content-Type': 'application/json'}
-});
-const data = await response.json();
-
-// console.log(data);*/
+    msg_archive = message.content
+    
+  }
 
   }
 
-})
+)
 
 client.login(env.BOT_TOKEN);
 
-function msToTime(duration) {
-  var milliseconds = Math.floor((duration % 1000) / 100),
-  seconds = Math.floor((duration / 1000) % 60),
-  minutes = Math.floor((duration / (1000 * 60)) % 60),
-  hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+/*
+We can make this bot to do make multiable servers
 
-  hours = (hours < 10) ? "0" + hours : hours;
-  minutes = (minutes < 10) ? "0" + minutes : minutes;
-  seconds = (seconds < 10) ? "0" + seconds : seconds;
-
-  return hours + ":" + minutes + ":" + seconds ;
+TODO:
+we're gonna write a data.json file
+then we're gonna add something like that:
+{
+  guild_id1: id,
+  channels_id = []
+},
+{
+  guild_id2: id,
+  channels_id: []
 }
-
-// chalk
-
-let log = console.log
-let bol = 0
-let ort = 0
-let tot = 0
-setInterval(function() {
-  const used = process.memoryUsage().heapUsed / 1024 / 1024;
-  let an = Math.round(used * 100) / 100
-  if(top < an) top = an
-  const uptime = process.uptime();
-  let a = msToTime(uptime * 1000)
-  bol = bol + 1
-  tot = tot + an
-  ort = tot / bol
-  console.clear();
-  log(chalk.bgGreen(`Anlık Kullanım: ${an}MB
-Ortalama Kullanım: ${ort}MB
-Zirve Kullanım: ${top}MB`))
-  log(chalk.bgBlue(`Uptime Süresi: ${a}
-Eklenen Data: ${eklen}`))
-}, 500);
+*/
